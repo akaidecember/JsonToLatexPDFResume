@@ -148,5 +148,5 @@ The output is a clean, 1-page `resume.pdf` with:
 - Small-caps section headers with underline
 - Narrow margins for space efficiency
 
-[View Sample Resume generated from above json](/sample/resume.pdf)
+[View Sample Resume generated from above json](resume.pdf)
 ---
