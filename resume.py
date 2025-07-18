@@ -59,10 +59,11 @@ def generate_tex(data):
         lo  = sanitize_latex(edu["location"])
         courses = ", ".join(sanitize_latex(c) for c in edu.get("courses", []))
         lines += [
-            rf"\textbf{{{deg}}} \hfill {dt}\\",
+            rf"\textbf{{{deg}}} \hfill \textbf{{{dt}}}\\",
             rf"{un} \hfill {lo}\\[4pt]",
-            rf"\small \textbf{{Courses:}} {courses}\\[4pt]",
         ]
+        if courses:
+            lines += [rf"\small \textbf{{Courses:}} {courses}\\[4pt]",]
     lines += [""]
 
     # Technical Skills
@@ -88,13 +89,15 @@ def generate_tex(data):
         lines.append(r"\vspace{6pt}")
 
     # Projects
-    lines += [r"\vspace{5pt}", r"\section{PROJECTS}", r"\noindent"]
+    if data.get("projects", []): lines += [r"\vspace{5pt}", r"\section{PROJECTS}", r"\noindent"]
     for proj in data.get("projects", []):
         tl = sanitize_latex(proj["title"])
         dt = sanitize_latex(proj["date"])
-        lk = proj.get("link","")
+        lk = proj.get("link", "")
+        if lk and not lk.startswith("http"):
+            lk = "https://" + lk
         if lk:
-            tl += rf" \href{{{lk}}}{{\scriptsize\faExternalLink}}"
+            tl = rf"\href{{{lk}}}{{{tl}}}"
         lines.append(rf"\noindent \textbf{{{tl}}} \hfill \textbf{{{dt}}}\\[-12pt]")
         lines.append(r"\begin{itemize}")
         for d in proj.get("description", []):
@@ -102,9 +105,22 @@ def generate_tex(data):
         lines.append(r"\end{itemize}")
         lines.append(r"\vspace{4pt}")
 
+    # Certificates
+    if data.get("certificates", []): lines += [r"\vspace{5pt}", r"\section{CERTIFICATION}", r"\noindent"]
+    for certf in data.get("certificates", []):
+        name = sanitize_latex(certf["name"])
+        lk = certf.get("link", "")
+        if lk and not lk.startswith("http"):
+            lk = "https://" + lk
+        if lk:
+            name = rf"\href{{{lk}}}{{{name}}}"
+        lines += [
+            rf"{{{name}}} \hfill\\",
+        ]
+    lines += [""]
+
     lines.append(r"\end{document}")
     return "\n".join(lines)
-
 
 def write_file(txt, path):
     with open(path, "w", encoding="utf-8") as f:
@@ -119,7 +135,7 @@ def compile_to_pdf(tex_path, out_dir):
 
 def main():
     p = argparse.ArgumentParser(description="Generate resume PDF from JSON")
-    p.add_argument("json_input", help="JSON resume file")
+    p.add_argument("--json_input", help="JSON resume file")
     p.add_argument("--output-dir", default=".", help="Output directory")
     args = p.parse_args()
 
