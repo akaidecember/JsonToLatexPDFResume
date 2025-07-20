@@ -1,5 +1,4 @@
 out
-resume_content.json
-resume_content2.json
+resume_content*.json
 .vscode
 .ropeproject

@@ -13,13 +13,13 @@ def sanitize_latex(s: str) -> str:
              .replace('^', r'\textasciicircum{}')
              .replace('|', r'\textbar{}'))
 
-def generate_tex(data):
+def generate_tex(data, oneLineEdu):
     lines = []
 
     # Preamble
     lines += [
         r"\documentclass[11pt]{article}",
-        r"\usepackage[top=0.25in, bottom=0.4in, left=0.4in, right=0.4in]{geometry}",
+        r"\usepackage[top=0.35in, bottom=0.4in, left=0.45in, right=0.45in]{geometry}",
         r"\usepackage[hidelinks]{hyperref}",
         r"\usepackage{titlesec}",
         r"\usepackage{enumitem}",
@@ -38,17 +38,21 @@ def generate_tex(data):
     em  = sanitize_latex(data["email"])
     loc = sanitize_latex(data["location"])
     li  = data.get("linkedin_url", "")
+    if li and not li.startswith("http"):
+        li = "https://" + li
     short_li = sanitize_latex(li.split("://")[-1]) if li else ""
 
     lines += [
         r"\begin{center}",
         rf"  {{\LARGE\bfseries {fn}}}\\[2pt]",
         rf"  {{\small  {ph} \,\textbar\, \href{{mailto:{em}}}{{{em}}}"
-        + (rf" \,\textbar\, \href{{{li}}}{{{short_li}}}" if li else "")
+        + (rf" \,\textbar\, \href{{{li}}}{{LinkedIn}}" if li else "")
         + rf" \,\textbar\, {loc}}}\\[4pt]",
         r"\end{center}",
         r""
     ]
+
+    lines += [r"\vspace{-3pt}"]
 
     # Education
     lines += [r"\vspace{-5pt}", r"\section{EDUCATION}", r"\noindent"]
@@ -58,24 +62,32 @@ def generate_tex(data):
         un  = sanitize_latex(edu["university"])
         lo  = sanitize_latex(edu["location"])
         courses = ", ".join(sanitize_latex(c) for c in edu.get("courses", []))
+        # if oneLineEdu:
+        #     lines += [
+        #         rf"\textbf{{{deg}}} \textbar\ {{{un}}} \textbar\ {{{lo}}} \hfill \textbf{{{dt}}}\\[4pt]",
+        #         # rf"{un} \hfill {lo}\\[4pt]",
+        #     ]
+        # else:
         lines += [
-            rf"\textbf{{{deg}}} \hfill \textbf{{{dt}}}\\",
-            rf"{un} \hfill {lo}\\[4pt]",
+            r"\normalsize",
+            rf"\textbf{{{deg}}} \hfill \textbf{{{dt}}}\\[1pt]",
+            rf"\textit{{{un}}} \hfill {lo}\\[6pt]",
         ]
         if courses:
-            lines += [rf"\small \textbf{{Courses:}} {courses}\\[4pt]",]
+            lines += [rf"\small \textbf{{Courses:}} {courses}\\[5pt]",]
     lines += [""]
+    lines += [r"\vspace{-9pt}"]
 
     # Technical Skills
-    lines += [r"\vspace{-5pt}", r"\section{TECHNICAL SKILLS}", r"\noindent"]
+    lines += [r"\vspace{-3pt}", r"\section{TECHNICAL SKILLS}", r"\noindent"]
     for skill in data.get("skills", []):
         nm  = sanitize_latex(skill["name"])
         val = sanitize_latex(skill["value"])
-        lines.append(rf"\small \textbf{{{nm}}}: {val}\\")
+        lines.append(rf"\small \textbf{{{nm}}}: {val}\\[2pt]")
     lines += [""]
 
     # Experience
-    lines += [r"\vspace{-5pt}", r"\section{EXPERIENCE}", r"\noindent"]
+    lines += [r"\vspace{-7pt}", r"\section{EXPERIENCE}", r"\noindent"]
     for exp in data.get("experience", []):
         ti = sanitize_latex(exp["title"])
         co = sanitize_latex(exp["company"])
@@ -88,17 +100,18 @@ def generate_tex(data):
         lines.append(r"\end{itemize}")
         lines.append(r"\vspace{6pt}")
 
-    # Projects
-    if data.get("projects", []): lines += [r"\vspace{5pt}", r"\section{PROJECTS}", r"\noindent"]
+    # Academic Projects
+    if data.get("projects", []): lines += [r"\vspace{5pt}", r"\section{ACADEMIC PROJECTS}", r"\noindent"]
     for proj in data.get("projects", []):
         tl = sanitize_latex(proj["title"])
         dt = sanitize_latex(proj["date"])
+        stk = sanitize_latex(proj["tech_stack"])
         lk = proj.get("link", "")
         if lk and not lk.startswith("http"):
             lk = "https://" + lk
         if lk:
-            tl = rf"\href{{{lk}}}{{{tl}}}"
-        lines.append(rf"\noindent \textbf{{{tl}}} \hfill \textbf{{{dt}}}\\[-12pt]")
+            tl = rf"{{{tl}}} \textbar\ \href{{{lk}}}{{Link}}"
+        lines.append(rf"\noindent \textbf{{{tl}}} \textbar\ \textit{{{stk}}} \hfill \textbf{{{dt}}}\\[-6pt]")
         lines.append(r"\begin{itemize}")
         for d in proj.get("description", []):
             lines.append(rf"  \item \small \raggedright {sanitize_latex(d)}")
@@ -137,12 +150,13 @@ def main():
     p = argparse.ArgumentParser(description="Generate resume PDF from JSON")
     p.add_argument("--json_input", help="JSON resume file")
     p.add_argument("--output-dir", default=".", help="Output directory")
+    p.add_argument("--oneLineEdu", default=True, help="Education section one line T/F")
     args = p.parse_args()
 
     data = json.load(open(args.json_input, encoding="utf-8"))
     os.makedirs(args.output_dir, exist_ok=True)
     tex = os.path.join(args.output_dir, "resume.tex")
-    write_file(generate_tex(data), tex)
+    write_file(generate_tex(data, args.oneLineEdu), tex)
 
     if not shutil.which("pdflatex"):
         print("Error: pdflatex not found; install MacTeX.", file=sys.stderr)
