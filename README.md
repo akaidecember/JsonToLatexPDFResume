@@ -63,77 +63,99 @@ Your JSON input should look like this:
 
 ```json
 {
-    "full_name": "John Doe",
-    "location": "New York, NY",
-    "phone_number": "+1-555-123-4567",
-    "email": "johndoe@example.com",
-    "linkedin_url": "https://www.linkedin.com/in/johndoe",
-    "linkedin_short_url": "",
-    "education": [
-        {
-            "university": "Example University",
-            "location": "New York, NY",
-            "degree": "Bachelor of Science, Computer Science",
-            "date": "Aug 2019 -- May 2023",
-            "courses": [
-                "Data Structures", "Algorithms", "Machine Learning", "Cloud Computing",
-                "Distributed Systems", "Databases", "Software Engineering"
-            ]
-        }
-    ],
-    "experience": [
-        {
-            "title": "Software Engineer",
-            "company": "Tech Solutions Inc.",
-            "location": "San Francisco, CA",
-            "date": "Jun 2023 -- Present",
-            "description": [
-                "Developed scalable REST APIs using Django and PostgreSQL.",
-                "Reduced page load times by 35% by optimizing backend services.",
-                "Automated deployment pipelines using Jenkins and Docker."
-            ]
-        },
-        {
-            "title": "Backend Developer Intern",
-            "company": "CodeLabs",
-            "location": "Boston, MA",
-            "date": "May 2022 -- Aug 2022",
-            "description": [
-                "Built microservices with Node.js and Express.",
-                "Worked with Redis and RabbitMQ for messaging and caching.",
-                "Wrote unit tests increasing coverage by 40%."
-            ]
-        }
-    ],
-    "projects": [
-        {
-            "title": "Smart Inventory Manager",
-            "date": "Mar 2023",
-            "tech_stack": "React, Flask, PostgreSQL",
-            "description": [
-                "Created a real-time inventory dashboard with low-stock alerts.",
-                "Implemented user authentication and role-based access.",
-                "Integrated external supplier APIs for inventory sync."
-            ]
-        },
-        {
-            "title": "ChatBot Assistant",
-            "date": "Oct 2022",
-            "tech_stack": "Python, NLP, FastAPI",
-            "description": [
-                "Designed a chatbot for customer support using NLTK and SpaCy.",
-                "Deployed backend on Heroku with continuous integration setup.",
-                "Achieved 92% accuracy in intent classification tasks."
-            ]
-        }
-    ],
-    "skills": [
-        {"name": "Languages", "value": "Python, Java, JavaScript, SQL"},
-        {"name": "Frameworks", "value": "React, Django, Node.js"},
-        {"name": "Databases", "value": "PostgreSQL, MongoDB"},
-        {"name": "DevOps", "value": "Docker, Jenkins, GitHub Actions"},
-        {"name": "Other", "value": "Linux, REST APIs, Agile, Jira"}
-    ]
+  "full_name": "John Doe",
+  "location": "New York, NY",
+  "phone_number": "+1-555-123-4567",
+  "email": "johndoe@example.com",
+  "linkedin_url": "https://www.linkedin.com/in/johndoe",
+  "linkedin_short_url": "",
+  "education": [
+    {
+      "university": "Example University",
+      "location": "New York, NY",
+      "degree": "Bachelor of Science, Computer Science",
+      "date": "Aug 2019 -- May 2023",
+      "courses": [
+        "Data Structures",
+        "Algorithms",
+        "Machine Learning",
+        "Cloud Computing",
+        "Distributed Systems",
+        "Databases",
+        "Software Engineering"
+      ]
+    }
+  ],
+  "experience": [
+    {
+      "title": "Software Engineer",
+      "company": "Tech Solutions Inc.",
+      "location": "San Francisco, CA",
+      "date": "Jun 2023 -- Present",
+      "description": [
+        "Developed scalable REST APIs using Django and PostgreSQL.",
+        "Reduced page load times by 35% by optimizing backend services.",
+        "Automated deployment pipelines using Jenkins and Docker."
+      ]
+    },
+    {
+      "title": "Backend Developer Intern",
+      "company": "CodeLabs",
+      "location": "Boston, MA",
+      "date": "May 2022 -- Aug 2022",
+      "description": [
+        "Built microservices with Node.js and Express.",
+        "Worked with Redis and RabbitMQ for messaging and caching.",
+        "Wrote unit tests increasing coverage by 40%."
+      ]
+    }
+  ],
+  "projects": [
+    {
+      "title": "Smart Inventory Manager",
+      "date": "Mar 2023",
+      "tech_stack": "React, Flask, PostgreSQL",
+      "link": "",
+      "description": [
+        "Created a real-time inventory dashboard with low-stock alerts.",
+        "Implemented user authentication and role-based access.",
+        "Integrated external supplier APIs for inventory sync."
+      ]
+    },
+    {
+      "title": "ChatBot Assistant",
+      "date": "Oct 2022",
+      "tech_stack": "Python, NLP, FastAPI",
+      "link": "",
+      "description": [
+        "Designed a chatbot for customer support using NLTK and SpaCy.",
+        "Deployed backend on Heroku with continuous integration setup.",
+        "Achieved 92% accuracy in intent classification tasks."
+      ]
+    }
+  ],
+  "skills": [
+    {
+      "name": "Languages",
+      "value": "Python, Java, JavaScript, SQL"
+    },
+    {
+      "name": "Frameworks",
+      "value": "React, Django, Node.js"
+    },
+    {
+      "name": "Databases",
+      "value": "PostgreSQL, MongoDB"
+    },
+    {
+      "name": "DevOps",
+      "value": "Docker, Jenkins, GitHub Actions"
+    },
+    {
+      "name": "Other",
+      "value": "Linux, REST APIs, Agile, Jira"
+    }
+  ]
 }
 ```
 
