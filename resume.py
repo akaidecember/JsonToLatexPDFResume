@@ -81,6 +81,12 @@ def generate_tex(data, oneLineEdu):
 
     lines += [r"\vspace{-3pt}"]
 
+    # ==== Summary ====
+    lines += [r"\vspace{-5pt}", r"\section{SUMMARY}", r"\noindent"]
+    summary_text = sanitize_latex(data.get("summary", ""))
+    if summary_text:
+        lines += [rf"\small {summary_text}\\[8pt]"]
+
     # ==== Education Section ====
     lines += [r"\vspace{-5pt}", r"\section{EDUCATION}", r"\noindent"]
     for edu in data.get("education", []):
@@ -151,7 +157,7 @@ def generate_tex(data, oneLineEdu):
         if lk:
             tl = rf"{{{tl}}} \textbar\ \href{{{lk}}}{{Link}}"
 
-        lines.append(rf"\noindent \textbf{{{tl}}} \textbar\ \textit{{{stk}}} \hfill \textbf{{{dt}}}\\[-6pt]")
+        lines.append(rf"\noindent \textbf{{{tl}}} \textbar\ \textit{{{stk}}} \hfill \textbf{{{dt}}}\\[-8pt]")
         lines.append(r"\begin{itemize}")
 
         for d in proj.get("description", []):
