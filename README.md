@@ -69,6 +69,7 @@ Your JSON input should look like this:
   "email": "johndoe@example.com",
   "linkedin_url": "https://www.linkedin.com/in/johndoe",
   "linkedin_short_url": "",
+  "summary": "This is the summary section of the resume"
   "education": [
     {
       "university": "Example University",

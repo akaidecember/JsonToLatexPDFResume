@@ -70,10 +70,10 @@ def generate_tex(data, oneLineEdu):
     lines += [
         r"\begin{center}",
         rf"  {{\LARGE\bfseries {fn}}}\\[2pt]",
-        rf"  {{\small  {ph} \,\textbar\, \href{{mailto:{em}}}{{{em}}}"
-        + (rf" \,\textbar\, \href{{{li}}}{{LinkedIn}}" if li else "")
-        + (rf" \,\textbar\, \href{{{git}}}{{Github}}" if git else "")
-        + (rf" \,\textbar\, \href{{{lc}}}{{Leetcode}}" if lc else "")
+        rf"  {{\small  {ph} \,\textbar\, \href{{mailto:{em}}}{{{{{em}}}}}"
+        + (rf" \,\textbar\, \href{{{li}}}{{\underline{{LinkedIn}}}}" if li else "")
+        + (rf" \,\textbar\, \href{{{git}}}{{\underline{{Github}}}}" if git else "")
+        + (rf" \,\textbar\, \href{{{lc}}}{{\underline{{Leetcode}}}}" if lc else "")
         + rf" \,\textbar\, {loc}}}\\[4pt]",
         r"\end{center}",
         r""
@@ -82,10 +82,11 @@ def generate_tex(data, oneLineEdu):
     lines += [r"\vspace{-3pt}"]
 
     # ==== Summary ====
-    lines += [r"\vspace{-5pt}", r"\section{SUMMARY}", r"\noindent"]
-    summary_text = sanitize_latex(data.get("summary", ""))
-    if summary_text:
-        lines += [rf"\small {summary_text}\\[8pt]"]
+    if data.get("summary", []):
+        lines += [r"\vspace{-5pt}", r"\section{SUMMARY}", r"\noindent"]
+        summary_text = sanitize_latex(data.get("summary", ""))
+        if summary_text:
+            lines += [rf"\small {summary_text}\\[-3pt]"]
 
     # ==== Education Section ====
     lines += [r"\vspace{-5pt}", r"\section{EDUCATION}", r"\noindent"]
@@ -106,11 +107,11 @@ def generate_tex(data, oneLineEdu):
         lines += [
             r"\normalsize",
             rf"\textbf{{{deg}}} \hfill \textbf{{{dt}}}\\[1pt]",
-            rf"\textit{{{un}}} \hfill {lo}\\[6pt]",
+            rf"\textit{{{un}}} \hfill {lo}\\[1pt]",
         ]
 
         if courses:
-            lines += [rf"\small \textbf{{Courses:}} {courses}\\[5pt]",]
+            lines += [rf"\small \textbf{{Courses:}} {courses}\\[7pt]",]
 
     lines += [""]
     lines += [r"\vspace{-9pt}"]
@@ -155,7 +156,7 @@ def generate_tex(data, oneLineEdu):
         if lk and not lk.startswith("http"):
             lk = "https://" + lk
         if lk:
-            tl = rf"{{{tl}}} \textbar\ \href{{{lk}}}{{Link}}"
+            tl = rf"{{{tl}}} \textbar\ \href{{{lk}}}{{\underline{{Link}}}}"
 
         lines.append(rf"\noindent \textbf{{{tl}}} \textbar\ \textit{{{stk}}} \hfill \textbf{{{dt}}}\\[-8pt]")
         lines.append(r"\begin{itemize}")
@@ -177,7 +178,7 @@ def generate_tex(data, oneLineEdu):
         if lk and not lk.startswith("http"):
             lk = "https://" + lk
         if lk:
-            name = rf"\href{{{lk}}}{{{name}}}"
+            name = rf"\href{{{lk}}}{{\underline{{{name}}}}}"
 
         lines += [
             rf"{{{name}}} \hfill\\",
