@@ -45,7 +45,7 @@ Create a `resume_content.json` file (see structure below).
 ### 3. Run the generator
 
 ```bash
-python resume.py --json_input resume_content.json --output-dir out
+python resume.py --json_input=resume.json --output-dir=out --section-order=experience,skills,education,projects
 ```
 
 This will generate:
