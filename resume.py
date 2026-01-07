@@ -25,7 +25,7 @@ def sanitize_latex(s: str) -> str:
              .replace('^', r'\textasciicircum{}')
              .replace('|', r'\textbar{}'))
 
-def generate_tex(data, oneLineEdu, section_order):
+def generate_tex(data, oneLineEdu, section_order, fullLinks):
     """
     Constructs the LaTeX document as a list of lines using the given resume JSON data.
     Returns a complete LaTeX source string.
@@ -35,7 +35,7 @@ def generate_tex(data, oneLineEdu, section_order):
     # ==== Preamble ====
     lines += [
         r"\documentclass[11pt]{article}",
-        r"\usepackage[top=0.35in, bottom=0.4in, left=0.45in, right=0.45in]{geometry}",
+        r"\usepackage[top=0.35in, bottom=0.35in, left=0.45in, right=0.45in]{geometry}",
         r"\usepackage[hidelinks]{hyperref}",
         r"\usepackage{titlesec}",
         r"\usepackage{enumitem}",
@@ -65,21 +65,25 @@ def generate_tex(data, oneLineEdu, section_order):
     if lc and not lc.startswith("http"):
         lc = "https://" + lc
 
-    #short_li = sanitize_latex(li.split("://")[-1]) if li else ""
+    def format_header_link(url, label):
+        if not url:
+            return ""
+        display_text = url if fullLinks else label
+        return rf" \,\textbar\, \href{{{url}}}{{\underline{{{sanitize_latex(display_text)}}}}}"
 
     lines += [
         r"\begin{center}",
         rf"  {{\LARGE\bfseries {fn}}}\\[2pt]",
         rf"  {{\small  {ph} \,\textbar\, \href{{mailto:{em}}}{{{{{em}}}}}"
-        + (rf" \,\textbar\, \href{{{li}}}{{\underline{{LinkedIn}}}}" if li else "")
-        + (rf" \,\textbar\, \href{{{git}}}{{\underline{{Github}}}}" if git else "")
-        + (rf" \,\textbar\, \href{{{lc}}}{{\underline{{Leetcode}}}}" if lc else "")
+        + format_header_link(li, "LinkedIn")
+        + format_header_link(git, "Github")
+        + format_header_link(lc, "Leetcode")
         + rf" \,\textbar\, {loc}}}\\[4pt]",
         r"\end{center}",
         r""
     ]
 
-    lines += [r"\vspace{-3pt}"]
+    lines += [r"\vspace{-1pt}"]
 
     # ==== Summary ====
     if data.get("summary", []):
@@ -90,8 +94,9 @@ def generate_tex(data, oneLineEdu, section_order):
 
     # ==== Sections according to section_order ====
     for section in section_order:
+        # EDUCATION
         if section.lower() == "education":
-            lines += [r"\vspace{-5pt}", r"\section{EDUCATION}", r"\noindent"]
+            lines += [r"\vspace{4pt}", r"\section{EDUCATION}", r"\noindent"]
             for edu in data.get("education", []):
                 deg     = sanitize_latex(edu["degree"])
                 dt      = sanitize_latex(edu["date"])
@@ -99,18 +104,18 @@ def generate_tex(data, oneLineEdu, section_order):
                 lo      = sanitize_latex(edu["location"])
                 courses = ", ".join(sanitize_latex(c) for c in edu.get("courses", []))
 
-                ###### Commented out one liner education 
-                # if oneLineEdu:
-                #     lines += [
-                #         rf"\textbf{{{deg}}} \textbar\ {{{un}}} \textbar\ {{{lo}}} \hfill \textbf{{{dt}}}\\[4pt]",
-                #         # rf"{un} \hfill {lo}\\[4pt]",
-                #     ]
-                # else:
-                lines += [
-                    r"\normalsize",
-                    rf"\textbf{{{deg}}} \hfill \textbf{{{dt}}}\\[1pt]",
-                    rf"\textit{{{un}}} \hfill {lo}\\[1pt]",
-                ]
+                ##### Commented out one liner education 
+                if oneLineEdu:
+                    lines += [
+                        rf"\textbf{{{deg}}} \textbar\ {{{un}}} \textbar\ {{{lo}}} \hfill \textbf{{{dt}}}\\[4pt]",
+                        # rf"{un} \hfill {lo}\\[4pt]",
+                    ]
+                else:
+                    lines += [
+                        r"\normalsize",
+                        rf"\textbf{{{deg}}} \hfill \textbf{{{dt}}}\\[1pt]",
+                        rf"\textit{{{un}}} \hfill {lo}\\[1pt]",
+                    ]
 
                 if courses:
                     lines += [rf"\small \textbf{{Courses:}} {courses}\\[7pt]",]
@@ -118,36 +123,39 @@ def generate_tex(data, oneLineEdu, section_order):
             lines += [""]
             lines += [r"\vspace{-9pt}"]
 
+        # SKILLS
         elif section.lower() == "skills":
             lines += [r"\vspace{-3pt}", r"\section{TECHNICAL SKILLS}", r"\noindent"]
 
             for skill in data.get("skills", []):
                 nm  = sanitize_latex(skill["name"])
                 val = sanitize_latex(skill["value"])
-                lines.append(rf"\small \textbf{{{nm}}}: {val}\\[2pt]")
+                lines.append(rf"\small \textbf{{{nm}}}: {val}\\[3pt]")
 
             lines += [""]
 
+        # EXPERIENCE
         elif section.lower() == "experience":
-            lines += [r"\vspace{-7pt}", r"\section{EXPERIENCE}", r"\noindent"]
+            lines += [r"\vspace{-6pt}", r"\section{EXPERIENCE}", r"\noindent"]
             for exp in data.get("experience", []):
                 ti = sanitize_latex(exp["title"])
                 co = sanitize_latex(exp["company"])
                 lo = sanitize_latex(exp["location"])
                 da = sanitize_latex(exp["date"])
 
-                lines.append(rf"\noindent \textbf{{{{{ti}}} \textbar\ {{{co}}}}} \textbar\ {lo} \hfill \textbf{{{{{da}}}}}\\[-6pt]")
+                lines.append(rf"\noindent \textbf{{{{{ti}}} \textbar\ {{{co}}}}} \textbar\ {lo} \hfill \textbf{{{{{da}}}}}\\[-10pt]")
                 lines.append(r"\begin{itemize}")
 
                 for desc in exp.get("description", []):
                     lines.append(rf"  \item \small \raggedright {sanitize_latex(desc)}")
 
                 lines.append(r"\end{itemize}")
-                lines.append(r"\vspace{6pt}")
+                lines.append(r"\vspace{10pt}")
 
+        # PROJECTS
         elif section.lower() == "projects":
             if data.get("projects", []):
-                lines += [r"\vspace{5pt}", r"\section{ACADEMIC PROJECTS}", r"\noindent"]
+                lines += [r"\vspace{1pt}", r"\section{PROJECTS}", r"\noindent"]
 
             for proj in data.get("projects", []):
                 tl = sanitize_latex(proj["title"])
@@ -169,22 +177,26 @@ def generate_tex(data, oneLineEdu, section_order):
                 lines.append(r"\end{itemize}")
                 lines.append(r"\vspace{4pt}")
 
-        elif section.lower() == "certificates" or section.lower() == "certification":
-            if data.get("certificates", []):
-                lines += [r"\vspace{5pt}", r"\section{CERTIFICATION}", r"\noindent"]
+        # CERTIFICATES
+        elif section.lower() in ("certificates", "certifications", "certification"):
+            certs = data.get("certificates", []) or data.get("certifications", [])
+            if certs:
+                lines += [r"\vspace{5pt}", r"\section{CERTIFICATIONS}", r"\noindent"]
 
-            for certf in data.get("certificates", []):
-                name = sanitize_latex(certf["name"])
-                lk = certf.get("link", "")
+            for certf in certs:
+                if isinstance(certf, str):
+                    name = sanitize_latex(certf)
+                    lk = ""
+                else:
+                    name = sanitize_latex(certf.get("name", ""))
+                    lk = certf.get("link", "")
 
                 if lk and not lk.startswith("http"):
                     lk = "https://" + lk
                 if lk:
                     name = rf"\href{{{lk}}}{{\underline{{{name}}}}}"
 
-                lines += [
-                    rf"{{{name}}} \hfill\\",
-                ]
+                lines += [rf"\small {{{name}}}\\[2pt]"]
                     
             lines += [""]
 
@@ -219,6 +231,7 @@ def main():
     p.add_argument("--output-dir", default=".", help="Output directory")
     p.add_argument("--oneLineEdu", default=True, help="Education section one line T/F")
     p.add_argument("--section-order", default="education,skills,experience,projects", help="Comma-separated list of sections in desired order")
+    p.add_argument("--full-links", action="store_true", dest="fullLinks", help="Show full URLs in header links")
     args = p.parse_args()
 
     data = json.load(open(args.json_input, encoding="utf-8"))
@@ -227,7 +240,7 @@ def main():
     section_order = [s.strip() for s in args.section_order.split(",") if s.strip()]
 
     tex = os.path.join(args.output_dir, "resume.tex")
-    write_file(generate_tex(data, args.oneLineEdu, section_order), tex)
+    write_file(generate_tex(data, args.oneLineEdu, section_order, args.fullLinks), tex)
 
     if not shutil.which("pdflatex"):
         print("Error: pdflatex not found; install MacTeX.", file=sys.stderr)

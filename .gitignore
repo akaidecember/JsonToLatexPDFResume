@@ -2,3 +2,4 @@ out
 resume_content*.json
 .vscode
 .ropeproject
+json_other
