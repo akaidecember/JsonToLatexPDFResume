@@ -3,3 +3,9 @@ resume_content*.json
 .vscode
 .ropeproject
 json_other
+Jobright_resumes/
+master_resume_doc.md
+.DS_Store
+__pycache__/
+*.py[cod]
+.DS_Store

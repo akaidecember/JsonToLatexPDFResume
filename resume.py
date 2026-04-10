@@ -7,7 +7,7 @@ document, then compiles it into a PDF using `pdflatex`.
 Author: Anshul Kumar Shandilya
 """
 
-import json, subprocess, shutil, os, argparse, sys
+import json, subprocess, shutil, os, argparse, sys, re
 
 def sanitize_latex(s: str) -> str:
     """
@@ -25,6 +25,26 @@ def sanitize_latex(s: str) -> str:
              .replace('^', r'\textasciicircum{}')
              .replace('|', r'\textbar{}'))
 
+def format_inline_markup(s: str) -> str:
+    """
+    Escapes LaTeX-sensitive text and converts markdown-style bold markers to LaTeX.
+    Supports patterns like **bold text** anywhere in user-provided strings.
+    """
+    parts = []
+    last_idx = 0
+
+    for match in re.finditer(r"\*\*(.+?)\*\*", s):
+        start, end = match.span()
+        if start > last_idx:
+            parts.append(sanitize_latex(s[last_idx:start]))
+        parts.append(rf"\textbf{{{sanitize_latex(match.group(1))}}}")
+        last_idx = end
+
+    if last_idx < len(s):
+        parts.append(sanitize_latex(s[last_idx:]))
+
+    return "".join(parts)
+
 def generate_tex(data, oneLineEdu, section_order, fullLinks):
     """
     Constructs the LaTeX document as a list of lines using the given resume JSON data.
@@ -35,7 +55,7 @@ def generate_tex(data, oneLineEdu, section_order, fullLinks):
     # ==== Preamble ====
     lines += [
         r"\documentclass[11pt]{article}",
-        r"\usepackage[top=0.35in, bottom=0.35in, left=0.45in, right=0.45in]{geometry}",
+        r"\usepackage[top=0.20in, bottom=0.35in, left=0.45in, right=0.45in]{geometry}",
         r"\usepackage[hidelinks]{hyperref}",
         r"\usepackage{titlesec}",
         r"\usepackage{enumitem}",
@@ -49,10 +69,10 @@ def generate_tex(data, oneLineEdu, section_order, fullLinks):
     ]
 
     # ==== Header ====
-    fn  = sanitize_latex(data["full_name"])
-    ph  = sanitize_latex(data["phone_number"])
+    fn  = format_inline_markup(data["full_name"])
+    ph  = format_inline_markup(data["phone_number"])
     em  = sanitize_latex(data["email"])
-    loc = sanitize_latex(data["location"])
+    loc = format_inline_markup(data["location"])
 
     li  = data.get("linkedin_url", "")
     git = data.get("github_link", "")
@@ -69,7 +89,7 @@ def generate_tex(data, oneLineEdu, section_order, fullLinks):
         if not url:
             return ""
         display_text = url if fullLinks else label
-        return rf" \,\textbar\, \href{{{url}}}{{\underline{{{sanitize_latex(display_text)}}}}}"
+        return rf" \,\textbar\, \href{{{url}}}{{\underline{{{format_inline_markup(display_text)}}}}}"
 
     lines += [
         r"\begin{center}",
@@ -88,7 +108,7 @@ def generate_tex(data, oneLineEdu, section_order, fullLinks):
     # ==== Summary ====
     if data.get("summary", []):
         lines += [r"\vspace{-5pt}", r"\section{SUMMARY}", r"\noindent"]
-        summary_text = sanitize_latex(data.get("summary", ""))
+        summary_text = format_inline_markup(data.get("summary", ""))
         if summary_text:
             lines += [rf"\small {summary_text}\\[-3pt]"]
 
@@ -98,11 +118,11 @@ def generate_tex(data, oneLineEdu, section_order, fullLinks):
         if section.lower() == "education":
             lines += [r"\vspace{4pt}", r"\section{EDUCATION}", r"\noindent"]
             for edu in data.get("education", []):
-                deg     = sanitize_latex(edu["degree"])
-                dt      = sanitize_latex(edu["date"])
-                un      = sanitize_latex(edu["university"])
-                lo      = sanitize_latex(edu["location"])
-                courses = ", ".join(sanitize_latex(c) for c in edu.get("courses", []))
+                deg     = format_inline_markup(edu["degree"])
+                dt      = format_inline_markup(edu["date"])
+                un      = format_inline_markup(edu["university"])
+                lo      = format_inline_markup(edu["location"])
+                courses = ", ".join(format_inline_markup(c) for c in edu.get("courses", []))
 
                 ##### Commented out one liner education 
                 if oneLineEdu:
@@ -128,8 +148,8 @@ def generate_tex(data, oneLineEdu, section_order, fullLinks):
             lines += [r"\vspace{-3pt}", r"\section{TECHNICAL SKILLS}", r"\noindent"]
 
             for skill in data.get("skills", []):
-                nm  = sanitize_latex(skill["name"])
-                val = sanitize_latex(skill["value"])
+                nm  = format_inline_markup(skill["name"])
+                val = format_inline_markup(skill["value"])
                 lines.append(rf"\small \textbf{{{nm}}}: {val}\\[3pt]")
 
             lines += [""]
@@ -138,16 +158,16 @@ def generate_tex(data, oneLineEdu, section_order, fullLinks):
         elif section.lower() == "experience":
             lines += [r"\vspace{-6pt}", r"\section{EXPERIENCE}", r"\noindent"]
             for exp in data.get("experience", []):
-                ti = sanitize_latex(exp["title"])
-                co = sanitize_latex(exp["company"])
-                lo = sanitize_latex(exp["location"])
-                da = sanitize_latex(exp["date"])
+                ti = format_inline_markup(exp["title"])
+                co = format_inline_markup(exp["company"])
+                lo = format_inline_markup(exp["location"])
+                da = format_inline_markup(exp["date"])
 
                 lines.append(rf"\noindent \textbf{{{{{ti}}} \textbar\ {{{co}}}}} \textbar\ {lo} \hfill \textbf{{{{{da}}}}}\\[-10pt]")
                 lines.append(r"\begin{itemize}")
 
                 for desc in exp.get("description", []):
-                    lines.append(rf"  \item \small \raggedright {sanitize_latex(desc)}")
+                    lines.append(rf"  \item \small \raggedright {format_inline_markup(desc)}")
 
                 lines.append(r"\end{itemize}")
                 lines.append(r"\vspace{10pt}")
@@ -158,9 +178,9 @@ def generate_tex(data, oneLineEdu, section_order, fullLinks):
                 lines += [r"\vspace{1pt}", r"\section{PROJECTS}", r"\noindent"]
 
             for proj in data.get("projects", []):
-                tl = sanitize_latex(proj["title"])
-                dt = sanitize_latex(proj["date"])
-                stk = sanitize_latex(proj["tech_stack"])
+                tl = format_inline_markup(proj["title"])
+                dt = format_inline_markup(proj["date"])
+                stk = format_inline_markup(proj["tech_stack"])
                 lk = proj.get("link", "")
 
                 if lk and not lk.startswith("http"):
@@ -172,7 +192,7 @@ def generate_tex(data, oneLineEdu, section_order, fullLinks):
                 lines.append(r"\begin{itemize}")
 
                 for d in proj.get("description", []):
-                    lines.append(rf"  \item \small \raggedright {sanitize_latex(d)}")
+                    lines.append(rf"  \item \small \raggedright {format_inline_markup(d)}")
 
                 lines.append(r"\end{itemize}")
                 lines.append(r"\vspace{4pt}")
@@ -185,10 +205,10 @@ def generate_tex(data, oneLineEdu, section_order, fullLinks):
 
             for certf in certs:
                 if isinstance(certf, str):
-                    name = sanitize_latex(certf)
+                    name = format_inline_markup(certf)
                     lk = ""
                 else:
-                    name = sanitize_latex(certf.get("name", ""))
+                    name = format_inline_markup(certf.get("name", ""))
                     lk = certf.get("link", "")
 
                 if lk and not lk.startswith("http"):
